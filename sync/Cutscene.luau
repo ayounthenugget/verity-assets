@@ -49,7 +49,7 @@ function Cutscene.play(scene: (any) -> ())
 	local cam = workspace.CurrentCamera
 	local saved = { type = cam.CameraType, fov = cam.FieldOfView, subject = cam.CameraSubject, cf = cam.CFrame }
 	local skipped = false
-	local tracked, conns = {}, {}
+	local tracked, conns, cleanups = {}, {}, {}
 	local state = { cf = cam.CFrame, fov = cam.FieldOfView, shakes = {}, kick = 0 }
 
 	-- screen furniture
@@ -271,6 +271,75 @@ function Cutscene.play(scene: (any) -> ())
 		e:Emit(36)
 	end
 
+	-- run something when the movie ends (even when skipped), e.g. put the lighting back
+	function c.onEnd(fn)
+		table.insert(cleanups, fn)
+	end
+	-- a choice cannot be skipped: forget any Skip press so later scenes play properly again
+	function c.unskip()
+		skipped = false
+	end
+
+	-- big touch-friendly buttons in the middle of the screen; yields until one is picked.
+	-- options = { { id = "a", text = "THE BACKROOMS", color = Theme.C.Yellow, deep = Theme.C.YellowDeep }, ... }
+	function c.choose(title: string, options)
+		skipped = false
+		skipBtn.Holder.Visible = false
+		local picked
+		local box = Theme.make("Frame", {
+			Name = "Choice",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.74),
+			Size = UDim2.fromOffset(780, 190),
+			BackgroundTransparency = 1,
+			ZIndex = 15,
+			Parent = holder,
+		})
+		Theme.text({
+			Position = UDim2.fromOffset(0, 0),
+			Size = UDim2.fromOffset(780, 54),
+			Text = title,
+			Font = Theme.Display,
+			TextColor3 = Color3.new(1, 1, 1),
+			MaxTextSize = 42,
+			ZIndex = 16,
+			Parent = box,
+		})
+		for i, opt in options do
+			Theme.button({
+				Text = opt.text,
+				Size = UDim2.fromOffset(370, 110),
+				Position = UDim2.fromOffset((i - 1) * 410, 70),
+				Color = opt.color,
+				Deep = opt.deep,
+				Parent = box,
+				ZIndex = 16,
+				OnClick = function()
+					picked = opt.id
+				end,
+			})
+		end
+		Gui.pop(box)
+		while not picked and holder.Parent do
+			task.wait(0.1)
+		end
+		box:Destroy()
+		skipBtn.Holder.Visible = true
+		return picked
+	end
+
+	-- a title card over the (usually dark) screen
+	function c.card(title: string, sub: string?, hold: number)
+		local card = Theme.make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = 12, Parent = holder })
+		local t = Theme.text({ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.45), Size = UDim2.fromOffset(900, 90), Text = title, Font = Theme.Display, TextColor3 = Theme.C.Yellow, MaxTextSize = 70, ZIndex = 13, Parent = card })
+		if sub then
+			Theme.text({ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.58), Size = UDim2.fromOffset(900, 50), Text = sub, Font = Theme.Display, TextColor3 = Color3.new(1, 1, 1), MaxTextSize = 30, ZIndex = 13, Parent = card })
+		end
+		Gui.pop(card)
+		c.wait(hold)
+		card:Destroy()
+	end
+
 	-- bars slide in, the scene runs
 	topBar.Position = UDim2.fromOffset(0, -64)
 	botBar.Position = UDim2.new(0, 0, 1, 0)
@@ -284,6 +353,9 @@ function Cutscene.play(scene: (any) -> ())
 	end
 
 	-- always put everything back
+	for _, fn in cleanups do
+		pcall(fn)
+	end
 	DialogueBox.hideSubtitle()
 	RunService:UnbindFromRenderStep("VerityCutscene")
 	for _, conn in conns do

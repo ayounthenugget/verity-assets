@@ -41,6 +41,11 @@ WorldFx.init()
 Stations.init()
 Pads.init()
 QuestHud.init()
+QuestHud.onFinale = function()
+	if not Cutscene.isActive() then
+		Cutscene.play(Cutscenes.finale)
+	end
+end
 Npcs.init()
 
 -- E prompts in the world
