@@ -30,8 +30,13 @@ local function ease(alpha: number, style: Enum.EasingStyle?, dir: Enum.EasingDir
 end
 
 local function playerControls()
+	local scripts = player:FindFirstChild("PlayerScripts")
+	local module = scripts and scripts:FindFirstChild("PlayerModule")
+	if not module then
+		return nil
+	end
 	local ok, controls = pcall(function()
-		return require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
+		return require(module):GetControls()
 	end)
 	return if ok then controls else nil
 end
@@ -75,6 +80,13 @@ function Cutscene.play(scene: (any) -> ())
 	local controls = playerControls()
 	if controls then
 		controls:Disable()
+	end
+	-- belt and braces: also freeze the humanoid so nobody wanders off mid-scene
+	local frozenHumanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	local savedSpeed, savedJump = nil, nil
+	if frozenHumanoid then
+		savedSpeed, savedJump = frozenHumanoid.WalkSpeed, frozenHumanoid.JumpPower
+		frozenHumanoid.WalkSpeed, frozenHumanoid.JumpPower = 0, 0
 	end
 	cam.CameraType = Enum.CameraType.Scriptable
 
@@ -289,6 +301,9 @@ function Cutscene.play(scene: (any) -> ())
 	cam.FieldOfView = saved.fov
 	if controls then
 		controls:Enable()
+	end
+	if frozenHumanoid and frozenHumanoid.Parent then
+		frozenHumanoid.WalkSpeed, frozenHumanoid.JumpPower = savedSpeed, savedJump
 	end
 	for _, name in savedLayers do
 		Gui.setLayerVisible(name, true)
