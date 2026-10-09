@@ -202,6 +202,15 @@ local function openDirection(origin: Vector3): Vector3
 	return best
 end
 
+-- ground height under a point, ignoring roofs and anything far above the reference height
+local function groundNear(pos: Vector3, refY: number): number
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = { game:GetService("Players").LocalPlayer.Character }
+	local hit = workspace:Raycast(Vector3.new(pos.X, refY + 6, pos.Z), Vector3.new(0, -40, 0), params)
+	return hit and hit.Position.Y or refY
+end
+
 local function bodyOf(hero)
 	return hero:FindFirstChild("Body") or hero.PrimaryPart
 end
@@ -242,7 +251,7 @@ local function blocklandsDoor(parent, cf: CFrame)
 			end
 		end
 	end
-	local panel = part(parent, Vector3.new(9, 18, 0.6), cf * CFrame.new(0, 9 + 0.0, 0), Color3.fromHex("#5BF2B0"), Enum.Material.Neon)
+	local panel = part(parent, Vector3.new(9, 18, 0.6), cf * CFrame.new(0, 9 + 0.0, 0), Color3.fromHex("#4DFF6A"), Enum.Material.Neon)
 	panel.Parent = m
 	local glow = Instance.new("PointLight")
 	glow.Color, glow.Range, glow.Brightness = Color3.fromHex("#8BFFB0"), 55, 3
@@ -403,7 +412,7 @@ local function endingBlocklands(c, hero, lightTo)
 		for gz = -2, 12 do
 			local h = math.floor(math.max(0, 3.2 * math.sin(gx * 0.45) + 2.4 * math.cos(gz * 0.55 + gx * 0.2) + rng:NextNumber(-0.6, 0.6)))
 			if h > 0 then
-				local b = Vector3.new(origin.X + gx * 12, 0, origin.Z - 40 - gz * 12)
+				local b = Vector3.new(origin.X + gx * 12, origin.Y, origin.Z - 40 - gz * 12)
 				part(land, Vector3.new(12, h * 4, 12), CFrame.new(b + Vector3.new(0, h * 2, 0)), dirt)
 				part(land, Vector3.new(12, 1.2, 12), CFrame.new(b + Vector3.new(0, h * 4 + 0.6, 0)), grass[rng:NextInteger(1, 3)])
 				if h >= 2 then
@@ -431,7 +440,9 @@ local function endingBlocklands(c, hero, lightTo)
 			part(halo, Vector3.new(T, T, 2 * R + T), CFrame.new(a * R, b * R, 0), sun, Enum.Material.Neon)
 		end
 	end
-	halo.PrimaryPart = halo:FindFirstChildWhichIsA("Part")
+	local core = part(halo, Vector3.new(1, 1, 1), CFrame.new(), sun)
+	core.Transparency = 1
+	halo.PrimaryPart = core
 	halo.Parent = nil
 
 	local base = origin + Vector3.new(0, 0, -30)
@@ -451,7 +462,7 @@ local function endingBlocklands(c, hero, lightTo)
 		while t < 5 and not c.skipped() do
 			t += task.wait()
 			local a = TweenService:GetValue(math.clamp(t / 5, 0, 1), Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-			local pos = hidden + Vector3.new(0, 10 + 36 * a, 8 * a)
+			local pos = hidden + Vector3.new(0, 8 + 26 * a, 6 * a)
 			hero:PivotTo(CFrame.lookAt(pos, pos + Vector3.new(0, 0, 1)) * CFrame.Angles(0, math.pi, 0))
 			halo:PivotTo(CFrame.new(pos) * CFrame.Angles(t * 0.5, t * 0.8, t * 0.3))
 		end
@@ -460,7 +471,7 @@ local function endingBlocklands(c, hero, lightTo)
 	lightTo({ ClockTime = 6.6, Ambient = Color3.fromRGB(120, 120, 140), OutdoorAmbient = Color3.fromRGB(120, 130, 150) }, 5)
 	ModelFactory.setFace(hero, "excited")
 	c.rig(5, function(a)
-		return CFrame.lookAt(origin + Vector3.new(0, 8 + 4 * a, 40 - 10 * a), hidden + Vector3.new(0, 10 + 36 * a, 8 * a)), 58 + 10 * a
+		return CFrame.lookAt(origin + Vector3.new(0, 6 + 3 * a, 36 - 8 * a), hidden + Vector3.new(0, 8 + 26 * a, 6 * a)), 58 + 6 * a
 	end, Enum.EasingStyle.Sine)
 	c.shake(2.5, 1)
 	c.punch(14)
@@ -501,12 +512,12 @@ function Cutscenes.finale(c)
 	local here = if you then you.Position else (QuestTargets.position(plot, "spawn") or Vector3.new(0, 3, 0))
 	local f = openDirection(here)
 	local r = f:Cross(Vector3.yAxis)
-	local ground = groundAt(plot, here)
+	local ground = groundNear(here, here.Y - 2.5)
 	local hp = Vector3.new(here.X, ground + 3, here.Z) + f * 9
 	local leftDoor = hp + f * 34 - r * 18 -- the Backrooms
 	local rightDoor = hp + f * 34 + r * 18 -- the Blocklands
-	leftDoor = Vector3.new(leftDoor.X, groundAt(plot, leftDoor), leftDoor.Z)
-	rightDoor = Vector3.new(rightDoor.X, groundAt(plot, rightDoor), rightDoor.Z)
+	leftDoor = Vector3.new(leftDoor.X, groundNear(leftDoor, ground), leftDoor.Z)
+	rightDoor = Vector3.new(rightDoor.X, groundNear(rightDoor, ground), rightDoor.Z)
 
 	local hero = newHero(c, 6)
 	hero:PivotTo(CFrame.lookAt(hp, hp + f) * CFrame.Angles(0, math.pi, 0))
@@ -542,7 +553,7 @@ function Cutscenes.finale(c)
 	c.shake(4, 1.4)
 	c.flash(0.5, Color3.fromHex("#FFF7C2"))
 	TweenService:Create(tear, TweenInfo.new(1.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = Vector3.new(16, 120, 0.6) }):Play()
-	glowTween(tearLight, 4, 140, 1.2)
+	glowTween(tearLight, 1.6, 80, 1.2)
 	ModelFactory.setFace(hero, "surprised")
 	c.wait(0.9)
 

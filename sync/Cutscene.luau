@@ -295,6 +295,15 @@ function Cutscene.play(scene: (any) -> ())
 			ZIndex = 15,
 			Parent = holder,
 		})
+		Theme.make("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(390, 95),
+			Size = UDim2.fromOffset(860, 230),
+			BackgroundColor3 = Color3.fromHex("#0A0720"),
+			BackgroundTransparency = 0.35,
+			ZIndex = 14,
+			Parent = box,
+		}, { Theme.corner(28) })
 		Theme.text({
 			Position = UDim2.fromOffset(0, 0),
 			Size = UDim2.fromOffset(780, 54),
