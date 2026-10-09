@@ -190,11 +190,20 @@ local function openDirection(origin: Vector3): Vector3
 	params.FilterType = Enum.RaycastFilterType.Exclude
 	params.FilterDescendantsInstances = { game:GetService("Players").LocalPlayer.Character }
 	local best, bestD = Vector3.new(0, 0, 1), -1
-	for i = 0, 15 do
-		local a = i / 16 * math.pi * 2
+	for i = 0, 23 do
+		local a = i / 24 * math.pi * 2
 		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
-		local hit = workspace:Raycast(origin + Vector3.new(0, 3, 0), dir * 70, params)
-		local d = hit and hit.Distance or 70
+		local d = 70
+		for _, h in { 2, 8, 18 } do
+			local hit = workspace:Raycast(origin + Vector3.new(0, h, 0), dir * 70, params)
+			d = math.min(d, hit and hit.Distance or 70)
+		end
+		-- also the two sides where the doors will stand
+		local side = Vector3.new(-dir.Z, 0, dir.X)
+		for _, sgn in { -1, 1 } do
+			local hit = workspace:Raycast(origin + dir * 30 + Vector3.new(0, 8, 0) + side * sgn * 4, side * sgn * 18, params)
+			d = math.min(d, 40 + (hit and hit.Distance or 18))
+		end
 		if d > bestD + 0.5 then
 			best, bestD = dir, d
 		end
@@ -226,7 +235,7 @@ local function backroomsDoor(parent, cf: CFrame)
 	local panel = part(parent, Vector3.new(12.4, 21.6, 0.6), cf * CFrame.new(0, 10.8, 0), Color3.fromHex("#D9C45A"), Enum.Material.Neon)
 	panel.Parent = m
 	local glow = Instance.new("PointLight")
-	glow.Color, glow.Range, glow.Brightness = Color3.fromHex("#FFEE7A"), 55, 3
+	glow.Color, glow.Range, glow.Brightness = Color3.fromHex("#FFEE7A"), 45, 1.6
 	glow.Parent = panel
 	-- stripes of wallpaper inside the doorway
 	for i = -2, 2 do
@@ -254,7 +263,7 @@ local function blocklandsDoor(parent, cf: CFrame)
 	local panel = part(parent, Vector3.new(9, 18, 0.6), cf * CFrame.new(0, 9 + 0.0, 0), Color3.fromHex("#4DFF6A"), Enum.Material.Neon)
 	panel.Parent = m
 	local glow = Instance.new("PointLight")
-	glow.Color, glow.Range, glow.Brightness = Color3.fromHex("#8BFFB0"), 55, 3
+	glow.Color, glow.Range, glow.Brightness = Color3.fromHex("#8BFFB0"), 45, 1.6
 	glow.Parent = panel
 	m.Parent = parent
 	return m, panel
@@ -357,7 +366,7 @@ local function endingBackrooms(c, hero, lightTo)
 	end)
 	c.rig(3.6, function(a)
 		local z = start.Z - 3.6 * a * 4.2
-		return CFrame.lookAt(Vector3.new(start.X + 5 - 3 * a, 5, z + 16 - 2 * a), Vector3.new(start.X, 3, z)), 52 - 8 * a
+		return CFrame.lookAt(Vector3.new(start.X + 5 - 3 * a, start.Y + 2, z + 16 - 2 * a), Vector3.new(start.X, start.Y, z)), 52 - 8 * a
 	end, Enum.EasingStyle.Linear)
 	c.say(V, "It's so... empty in here.", "sad", 1.1, hero)
 	c.say(V, "Yellow walls. A hum with nobody in it. Everything is waiting for something.", "worried", 1.4, hero)

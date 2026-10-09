@@ -41,6 +41,19 @@ WorldFx.init()
 Stations.init()
 Pads.init()
 QuestHud.init()
+-- Studio only: replay any cutscene from the command bar, e.g.
+--   game.ReplicatedStorage.DevPlayCutscene:Fire("finale")
+if game:GetService("RunService"):IsStudio() then
+	local ev = Instance.new("BindableEvent")
+	ev.Name = "DevPlayCutscene"
+	ev.Parent = game:GetService("ReplicatedStorage")
+	ev.Event:Connect(function(name)
+		local fn = Cutscenes[name]
+		if fn and not Cutscene.isActive() then
+			Cutscene.play(fn)
+		end
+	end)
+end
 QuestHud.onFinale = function()
 	if not Cutscene.isActive() then
 		Cutscene.play(Cutscenes.finale)
