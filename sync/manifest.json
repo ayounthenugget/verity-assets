@@ -1,1 +1,1 @@
-[{"file": "Cutscenes", "path": "StarterPlayer.StarterPlayerScripts.VerityClient", "class": "ModuleScript", "name": "Cutscenes"}]
+[{"file": "Config", "path": "ReplicatedStorage.Shared", "class": "ModuleScript", "name": "Config"}, {"file": "DevService", "path": "ServerScriptService.VerityServer", "class": "ModuleScript", "name": "DevService"}, {"file": "Hud", "path": "StarterPlayer.StarterPlayerScripts.VerityClient", "class": "ModuleScript", "name": "Hud"}]

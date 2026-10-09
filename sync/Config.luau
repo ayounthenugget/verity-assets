@@ -27,6 +27,10 @@ Config.STARTING_DISPLAY_SLOTS = 3
 -- Turn this off once the tutorial quest chain gives it out.
 Config.DEV_GRANT_STARTER_EGG_ON_JOIN = false
 
+-- Playtest switch: show the Dev panel (coins, quests, eggs, reset) to EVERY player, not just in Studio.
+-- Each player can only change their own save. Set to false before the real launch.
+Config.DEV_MENU_FOR_ALL = true
+
 -- Remote spam protection: actions per second per player (holding E buys about 8 a second)
 Config.ACTION_RATE_LIMIT = 14
 

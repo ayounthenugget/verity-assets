@@ -300,7 +300,7 @@ function Hud.init()
 	end
 
 	---------------------------------------------------------------------------
-	-- Studio-only dev panel
+	-- Dev panel (Studio, or everyone while Config.DEV_MENU_FOR_ALL is on)
 	---------------------------------------------------------------------------
 	task.spawn(function()
 		local dev = State.devRemote() or ReplicatedStorage.Remotes:WaitForChild("Dev", 3)
