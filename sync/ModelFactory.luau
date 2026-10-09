@@ -187,6 +187,10 @@ function ModelFactory.setFace(model: Model, mood: string?, open: number?)
 	local w = r * 0.12
 	local ink = INK
 	open = open or 0
+	local before = {}
+	for _, child in model:GetChildren() do
+		before[child] = true
+	end
 
 	-- eyes
 	if look.eyes == "closed" then
@@ -250,6 +254,14 @@ function ModelFactory.setFace(model: Model, mood: string?, open: number?)
 	elseif look.brows == "smug" then
 		stroke(model, "BrowL", "ball", r, { Vector2.new(-0.46, 0.46), Vector2.new(-0.14, 0.46) }, w * 0.8, ink)
 		stroke(model, "BrowR", "ball", r, { Vector2.new(0.14, 0.5), Vector2.new(0.46, 0.6) }, w * 0.8, ink)
+	end
+
+	-- the parts above were built around the origin; move them onto the ball
+	local pivot = body.CFrame
+	for _, child in model:GetChildren() do
+		if not before[child] and child:IsA("BasePart") then
+			child.CFrame = pivot * child.CFrame
+		end
 	end
 end
 
