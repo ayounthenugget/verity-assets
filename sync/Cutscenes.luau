@@ -88,7 +88,7 @@ function Cutscenes.intro(c)
 	ModelFactory.setFace(hero, "excited")
 	c.shake(2, 0.9)
 	c.punch(-18)
-	c.camTo(CFrame.lookAt(origin + Vector3.new(0, 0, -5), origin), 26, 0.7, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+	c.camTo(CFrame.lookAt(origin + Vector3.new(0, 0, -9), origin), 30, 0.55, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 	c.flash(0.9)
 	floating = false
 	hero.Parent = nil
