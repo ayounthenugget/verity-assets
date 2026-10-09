@@ -325,6 +325,7 @@ local function endingBackrooms(c, hero, lightTo)
 	part(hall, Vector3.new(1, 17, length), CFrame.new(origin + Vector3.new(-13, 8, -length / 2 + 30)), wall)
 	part(hall, Vector3.new(1, 17, length), CFrame.new(origin + Vector3.new(13, 8, -length / 2 + 30)), wall)
 	part(hall, Vector3.new(26, 17, 1), CFrame.new(origin + Vector3.new(0, 8, 31)), wall)
+	part(hall, Vector3.new(26, 17, 1), CFrame.new(origin + Vector3.new(0, 8, 30 - length)), wall)
 	-- wallpaper stripes and baseboards
 	for z = 20, -length + 30, -6 do
 		part(hall, Vector3.new(0.3, 17, 0.5), CFrame.new(origin + Vector3.new(-12.4, 8, z)), Color3.fromHex("#B09A3E"))
@@ -339,7 +340,7 @@ local function endingBackrooms(c, hero, lightTo)
 	for z = 10, -length + 40, -22 do
 		local lamp = part(hall, Vector3.new(7, 0.4, 3.4), CFrame.new(origin + Vector3.new(0, 15.7, z)), Color3.fromHex("#4A4220"))
 		local l = Instance.new("PointLight")
-		l.Color, l.Range, l.Brightness, l.Enabled = Color3.fromHex("#FFF2A0"), 34, 2.4, false
+		l.Color, l.Range, l.Brightness, l.Enabled = Color3.fromHex("#FFF2A0"), 26, 1.0, false
 		l.Parent = lamp
 		table.insert(lamps, { part = lamp, light = l })
 	end
@@ -375,7 +376,7 @@ local function endingBackrooms(c, hero, lightTo)
 	-- he lights up, and the hall wakes one lamp at a time
 	local end3 = bodyOf(hero).Position
 	ModelFactory.setFace(hero, "excited")
-	glowTween(glow, 5, 70, 1.4)
+	glowTween(glow, 1.8, 36, 1.4)
 	c.punch(14)
 	c.shake(3, 1.2)
 	c.camTo(CFrame.lookAt(end3 + Vector3.new(6, 6, 26), end3 + Vector3.new(0, 2, -30)), 60, 1.0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -393,7 +394,7 @@ local function endingBackrooms(c, hero, lightTo)
 	c.rig(3.2, function(a)
 		return CFrame.lookAt(end3 + Vector3.new(6 - 8 * a, 6 + 4 * a, 26 + 14 * a), end3 + Vector3.new(0, 3, -30 - 20 * a)), 60 + 14 * a
 	end, Enum.EasingStyle.Sine)
-	lightTo({ Ambient = Color3.fromRGB(60, 54, 25), OutdoorAmbient = Color3.fromRGB(60, 54, 25) }, 2)
+	lightTo({ Ambient = Color3.fromRGB(34, 30, 12), OutdoorAmbient = Color3.fromRGB(34, 30, 12) }, 2)
 	ModelFactory.setFace(hero, "happy")
 	c.say(V, "It was never missing walls. It was missing light.", "excited", 1.3, hero)
 	c.say(V, "I'm the light in the empty places. That's what I'm FOR!", "excited", 1.4, hero)
